@@ -35,20 +35,20 @@
 - [ ] **Real-Time Trigger**
     - [ ] Add `input` event listener to the Cyrillic Textarea.
     - [ ] On keyup/paste: Run `convertString()` and update `outputField.value`.
-- [ ] **UI State Management**
-    - [ ] If input is empty, disable Export buttons (add class `.disabled` or attribute `disabled`).
+- [x] **UI State Management**
+    - [x] If input is empty, disable Export buttons (add class `.disabled` or attribute `disabled`).
 
 ---
 
 ## 📋 Phase 3: Clipboard & Reset Actions
 *Implement the utility buttons.*
 
-- [ ] **Copy Functionality**
-    - [ ] logic: `navigator.clipboard.writeText(outputValue)`.
-    - [ ] **Feedback:** Trigger a visual change (e.g., change button text to "COPIED!" for 2 seconds) so the user knows it worked.
-- [ ] **Clear/Reset Functionality**
-    - [ ] Logic: Set `inputField.value = ''` and `outputField.value = ''`.
-    - [ ] Focus cursor back to Input field.
+- [x] **Copy Functionality**
+    - [x] logic: `navigator.clipboard.writeText(outputValue)`.
+    - [x] **Feedback:** Trigger a visual change (e.g., change button text to "COPIED!" for 2 seconds) so the user knows it worked.
+- [x] **Clear/Reset Functionality**
+    - [x] Logic: Set `inputField.value = ''` and `outputField.value = ''`.
+    - [x] Focus cursor back to Input field.
 
 ---
 
