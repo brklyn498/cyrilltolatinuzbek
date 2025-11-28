@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ConversionMode } from './types';
 import { convertText } from './utils/converter';
 import { RetroButton } from './components/RetroButton';
@@ -15,6 +15,8 @@ const App: React.FC = () => {
   const [currentMode, setCurrentMode] = useState<ConversionMode>(ConversionMode.CYRILLIC_TO_LATIN);
   const [isCopied, setIsCopied] = useState(false);
 
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
   const handleConvert = () => {
     const result = convertText(inputText, currentMode);
     setOutputText(result);
@@ -29,6 +31,7 @@ const App: React.FC = () => {
   const handleClear = () => {
     setInputText('');
     setOutputText('');
+    inputRef.current?.focus();
   };
 
   const handlePaste = async () => {
@@ -92,6 +95,7 @@ const App: React.FC = () => {
             <div className="flex-grow relative group">
               <div className="absolute inset-0 bg-[#F4A261] translate-x-2 translate-y-2 rounded-sm"></div>
               <textarea
+                ref={inputRef}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 className="relative w-full h-[300px] lg:h-[500px] bg-[#FDF6E3] text-[#1a1a2e] p-4 font-mono text-sm md:text-base border-2 border-[#5C4033] outline-none focus:border-[#e76f51] resize-none shadow-inner-retro leading-relaxed"
@@ -211,6 +215,7 @@ const App: React.FC = () => {
               <RetroButton 
                 onClick={handleDownload} 
                 variant="secondary" 
+                disabled={!inputText}
                 className="flex-1 text-xs md:text-sm py-2 bg-[#e9c46a]"
               >
                 Fayl Sifatida Yuklash
@@ -218,6 +223,7 @@ const App: React.FC = () => {
               <RetroButton 
                 onClick={handleCopy} 
                 variant="secondary" 
+                disabled={!inputText}
                 className="flex-1 text-xs md:text-sm py-2 bg-[#e9c46a]"
               >
                 {isCopied ? 'Nusxalandi!' : 'Chiqishni Nusxalash'}
