@@ -3,34 +3,28 @@ import { ConversionMode } from './types';
 import { convertText } from './utils/converter';
 import { RetroButton } from './components/RetroButton';
 
-// Initial sample text to populate the input
-const SAMPLE_CODE = `function convert(text) {
-  return text.toUpperCase();
-}
-
-// Sample code input.`;
+// Initial sample text in Uzbek Cyrillic to demonstrate the feature
+const SAMPLE_CODE = `Ўзбекистон Республикаси Марказий Осиёнинг марказида жойлашган давлатдир.
+Пойтахти - Тошкент шаҳри.
+Давлат тили - ўзбек тили.
+Бу матн лотин алифбосига автоматик равишда ўгирилади.`;
 
 const App: React.FC = () => {
   const [inputText, setInputText] = useState<string>(SAMPLE_CODE);
   const [outputText, setOutputText] = useState<string>('');
-  const [currentMode, setCurrentMode] = useState<ConversionMode>(ConversionMode.UPPERCASE);
+  const [currentMode, setCurrentMode] = useState<ConversionMode>(ConversionMode.CYRILLIC_TO_LATIN);
   const [isCopied, setIsCopied] = useState(false);
-
-  // Auto-convert when mode or input changes (optional, but makes it reactive)
-  // The user prompt implies a big "Convert" button, so we might want manual trigger.
-  // However, reactive is better UX. Let's make the button trigger the "official" conversion animation/state.
-  // For this implementation, I'll make it reactive but the big button forces a refresh/re-run visual.
 
   const handleConvert = () => {
     const result = convertText(inputText, currentMode);
     setOutputText(result);
   };
 
-  // Initial conversion
+  // Initial conversion and when input/mode changes
   useEffect(() => {
     handleConvert();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [inputText, currentMode]);
 
   const handleClear = () => {
     setInputText('');
@@ -142,6 +136,15 @@ const App: React.FC = () => {
 
               {/* Mode Buttons Grid */}
               <div className="grid grid-cols-2 gap-3 mb-6">
+                <RetroButton
+                    variant="accent"
+                    isActive={currentMode === ConversionMode.CYRILLIC_TO_LATIN}
+                    onClick={() => setCurrentMode(ConversionMode.CYRILLIC_TO_LATIN)}
+                    className="col-span-2 text-sm py-3 bg-[#F4A261] border-[#5C4033] font-bold"
+                  >
+                    CYRILLIC -&gt; LATIN
+                  </RetroButton>
+
                 {[
                   ConversionMode.LOWERCASE,
                   ConversionMode.TITLE_CASE,
@@ -165,15 +168,13 @@ const App: React.FC = () => {
                   </RetroButton>
                 ))}
                 
-                 {/* Re-add uppercase as a button option if needed, or let the "default" dropdown imply it. 
-                     Let's add it to complete the set if user switches away. */}
                  <RetroButton
                     variant="accent"
                     isActive={currentMode === ConversionMode.UPPERCASE}
                     onClick={() => setCurrentMode(ConversionMode.UPPERCASE)}
-                    className="col-span-2 mt-1 text-xs py-2 bg-[#F4A261] border-[#5C4033]"
+                    className="col-span-2 mt-1 text-xs py-2"
                   >
-                    KATTA HARF (ASOSIY)
+                    KATTA HARF
                   </RetroButton>
               </div>
 
