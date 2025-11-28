@@ -8,22 +8,22 @@
 ## 🧠 Phase 1: The Transliteration Engine
 *Build the core logic function independent of the HTML.*
 
-- [ ] **Define Mapping Dictionary (`const`)**
-    - [ ] Create Key-Value pairs for direct 1:1 mapping (e.g., `'а': 'a'`, `'б': 'b'`).
-    - [ ] **Critical Rule:** Map both Lowercase and Uppercase keys separately to ensure case preservation.
-- [ ] **Implement Complex Linguistics Logic**
-    - [ ] **The "E" Rule:**
+- [x] **Define Mapping Dictionary (`const`)**
+    - [x] Create Key-Value pairs for direct 1:1 mapping (e.g., `'а': 'a'`, `'б': 'b'`).
+    - [x] **Critical Rule:** Map both Lowercase and Uppercase keys separately to ensure case preservation. (Implemented with smart casing logic)
+- [x] **Implement Complex Linguistics Logic**
+    - [x] **The "E" Rule:**
         - Logic: If `е` is the *first letter* of a word OR follows a vowel, convert to `ye`.
         - Else: convert to `e`.
-    - [ ] **The "Ц" Rule:**
-        - Logic: Convert `ц` to `ts`.
-    - [ ] **The Apostrophes (Ў & Ғ):**
+    - [x] **The "Ц" Rule:**
+        - Logic: Convert `ц` to `ts` (Handles TS/Ts/ts smart casing).
+    - [x] **The Apostrophes (Ў & Ғ):**
         - Logic: Convert `ў` to `o'` and `ғ` to `g'`.
-    - [ ] **The Soft/Hard Signs (ъ / ь):**
+    - [x] **The Soft/Hard Signs (ъ / ь):**
         - Logic: Depending on strictness, usually mapped to `'` (apostrophe) or removed entirely in modern Latin Uzbek.
-- [ ] **Create Main `convertString(text)` Function**
-    - [ ] Input: String. Output: String.
-    - [ ] Iterate through string, apply dictionary lookup, apply special rules, return result.
+- [x] **Create Main `convertString(text)` Function**
+    - [x] Input: String. Output: String.
+    - [x] Iterate through string, apply dictionary lookup, apply special rules, return result.
 
 ---
 
