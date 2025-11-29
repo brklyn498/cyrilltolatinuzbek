@@ -63,10 +63,10 @@
         3. Set filename to `uzbek-latin-[timestamp].txt`.
         4. Programmatically click the link.
         5. Remove link from DOM.
-- [ ] **.PDF Export System**
-    - [ ] **Library:** Import `jspdf` (via CDN).
-    - [ ] Create `downloadPdf()` function.
-    - [ ] Logic:
+- [x] **.PDF Export System**
+    - [x] **Library:** Import `jspdf` (Installed via npm).
+    - [x] Create `downloadPdf()` function.
+    - [x] Logic:
         1. Initialize `new jsPDF()`.
         2. Set Font to standard (Helvetica/Courier) as output is Latin.
         3. Use `.splitTextToSize()` to wrap text within margins (A4 width is approx 210mm).
