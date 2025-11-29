@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ConversionMode } from './types';
 import { convertText } from './utils/converter';
+import { generatePdf } from './utils/pdfGenerator';
 import { RetroButton } from './components/RetroButton';
 
 // Initial sample text in Uzbek Cyrillic to demonstrate the feature
@@ -14,8 +15,10 @@ const App: React.FC = () => {
   const [outputText, setOutputText] = useState<string>('');
   const [currentMode, setCurrentMode] = useState<ConversionMode>(ConversionMode.CYRILLIC_TO_LATIN);
   const [isCopied, setIsCopied] = useState(false);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
 
   const handleConvert = () => {
     const result = convertText(inputText, currentMode);
@@ -27,6 +30,19 @@ const App: React.FC = () => {
     handleConvert();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputText, currentMode]);
+
+  // Click outside to close menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
+            setShowDownloadMenu(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleClear = () => {
     setInputText('');
@@ -51,7 +67,7 @@ const App: React.FC = () => {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const handleDownload = () => {
+  const handleDownloadTxt = () => {
     if (!outputText) return;
     const element = document.createElement('a');
     const file = new Blob([outputText], { type: 'text/plain' });
@@ -60,6 +76,18 @@ const App: React.FC = () => {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+    setShowDownloadMenu(false);
+  };
+
+  const handleDownloadPdf = () => {
+    if (!outputText) return;
+    generatePdf(outputText);
+    setShowDownloadMenu(false);
+  };
+
+  const toggleDownloadMenu = () => {
+    if (!outputText) return;
+    setShowDownloadMenu(!showDownloadMenu);
   };
 
   return (
@@ -211,15 +239,41 @@ const App: React.FC = () => {
               />
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2">
-              <RetroButton 
-                onClick={handleDownload} 
-                variant="secondary" 
-                disabled={!inputText}
-                className="flex-1 text-xs md:text-sm py-2 bg-[#e9c46a]"
-              >
-                Fayl Sifatida Yuklash
-              </RetroButton>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2 relative">
+
+              <div className="flex-1 relative" ref={downloadMenuRef}>
+                 <RetroButton
+                    onClick={toggleDownloadMenu}
+                    variant="secondary"
+                    disabled={!inputText}
+                    className="w-full h-full text-xs md:text-sm py-2 bg-[#e9c46a] flex items-center justify-center gap-2"
+                  >
+                    Fayl Sifatida Yuklash
+                    {/* Small arrow icon */}
+                    <span className={`transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </RetroButton>
+
+                  {/* Dropdown Menu */}
+                  {showDownloadMenu && (
+                    <div className="absolute bottom-full left-0 w-full mb-2 bg-[#FDF6E3] border-2 border-[#5C4033] shadow-neo z-50 flex flex-col p-1 animate-in fade-in zoom-in duration-200">
+                         <button
+                            onClick={handleDownloadTxt}
+                            className="text-left px-4 py-3 hover:bg-[#F4A261] hover:text-[#1a1a2e] text-[#5C4033] font-bold font-mono text-xs uppercase tracking-wider border-b border-[#5C4033]/20 last:border-0"
+                         >
+                            TXT (.txt)
+                         </button>
+                         <button
+                            onClick={handleDownloadPdf}
+                            className="text-left px-4 py-3 hover:bg-[#F4A261] hover:text-[#1a1a2e] text-[#5C4033] font-bold font-mono text-xs uppercase tracking-wider"
+                         >
+                            PDF (.pdf)
+                         </button>
+                    </div>
+                  )}
+              </div>
+
               <RetroButton 
                 onClick={handleCopy} 
                 variant="secondary" 
