@@ -30,11 +30,11 @@
 ## 🔌 Phase 2: DOM & Event Wiring
 *Connect the Engine to your Neobrutalist UI.*
 
-- [ ] **Element Selection**
-    - [ ] Cache DOM elements: `inputField`, `outputField`, `btnCopy`, `btnSave`, `btnPdf`.
-- [ ] **Real-Time Trigger**
-    - [ ] Add `input` event listener to the Cyrillic Textarea.
-    - [ ] On keyup/paste: Run `convertString()` and update `outputField.value`.
+- [x] **Element Selection**
+    - [x] Cache DOM elements: `inputField`, `outputField`, `btnCopy`, `btnSave`, `btnPdf`.
+- [x] **Real-Time Trigger**
+    - [x] Add `input` event listener to the Cyrillic Textarea.
+    - [x] On keyup/paste: Run `convertString()` and update `outputField.value`.
 - [x] **UI State Management**
     - [x] If input is empty, disable Export buttons (add class `.disabled` or attribute `disabled`).
 
@@ -55,18 +55,18 @@
 ## 💾 Phase 4: File Export Engines
 *Implement the download capabilities.*
 
-- [ ] **.TXT Download System**
-    - [ ] Create `downloadTxt()` function.
-    - [ ] Logic:
+- [x] **.TXT Download System**
+    - [x] Create `downloadTxt()` function.
+    - [x] Logic:
         1. Create a `Blob` with MIME type `text/plain`.
         2. Create a temporary `<a>` tag with `href = URL.createObjectURL(blob)`.
         3. Set filename to `uzbek-latin-[timestamp].txt`.
         4. Programmatically click the link.
         5. Remove link from DOM.
-- [ ] **.PDF Export System**
-    - [ ] **Library:** Import `jspdf` (via CDN).
-    - [ ] Create `downloadPdf()` function.
-    - [ ] Logic:
+- [x] **.PDF Export System**
+    - [x] **Library:** Import `jspdf` (Installed via npm).
+    - [x] Create `downloadPdf()` function.
+    - [x] Logic:
         1. Initialize `new jsPDF()`.
         2. Set Font to standard (Helvetica/Courier) as output is Latin.
         3. Use `.splitTextToSize()` to wrap text within margins (A4 width is approx 210mm).
