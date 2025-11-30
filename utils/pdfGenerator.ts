@@ -1,5 +1,12 @@
 import { jsPDF } from 'jspdf';
 
+/**
+ * Generates a PDF document from the provided text string.
+ * Uses 'jspdf' to create a simple text-based PDF with a timestamped header.
+ *
+ * @param text - The text content to include in the PDF.
+ * @returns void - Triggers a download of the generated PDF file ('converted_samarkand.pdf').
+ */
 export const generatePdf = (text: string): void => {
   // Initialize PDF (Portrait, Millimeters, A4)
   const doc = new jsPDF('p', 'mm', 'a4');

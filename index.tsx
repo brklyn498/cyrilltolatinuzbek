@@ -7,6 +7,10 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
+/**
+ * The entry point for the React application.
+ * Creates the root using ReactDOM and renders the App component within React.StrictMode.
+ */
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
