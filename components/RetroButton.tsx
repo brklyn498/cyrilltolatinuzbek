@@ -1,14 +1,30 @@
 import React from 'react';
 
+/**
+ * Props for the RetroButton component.
+ */
 interface RetroButtonProps {
+  /** The content to be rendered inside the button (e.g., text, icons). */
   children: React.ReactNode;
+  /** Optional click handler function. */
   onClick?: () => void;
+  /** Visual style variant of the button. Defaults to 'secondary'. */
   variant?: 'primary' | 'secondary' | 'accent' | 'danger';
+  /** Optional additional CSS classes to apply to the button. */
   className?: string;
+  /** Indicates if the button is in an active/pressed state (styling only). Defaults to false. */
   isActive?: boolean;
+  /** Indicates if the button is disabled. Defaults to false. */
   disabled?: boolean;
 }
 
+/**
+ * A reusable button component with retro/neobrutalist styling.
+ * Supports different variants (primary, secondary, accent, danger) and states (active, disabled).
+ *
+ * @param props - The properties for the component.
+ * @returns A styled HTML button element.
+ */
 export const RetroButton: React.FC<RetroButtonProps> = ({
   children,
   onClick,

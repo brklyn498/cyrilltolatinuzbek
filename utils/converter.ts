@@ -38,16 +38,33 @@ const CYRILLIC_TO_LATIN_MAP: { [key: string]: string } = {
   'е': 'e', // Default, handled specially in code but good to have fallback
 };
 
-// Check if a character is a vowel (Cyrillic)
+/**
+ * Checks if a given character is a Cyrillic vowel.
+ *
+ * @param char - The character to check.
+ * @returns True if the character is a Cyrillic vowel (case-insensitive), false otherwise.
+ */
 const isCyrillicVowel = (char: string): boolean => {
   return /^[аеёиоуэюяўАЕЁИОУЭЮЯЎ]$/.test(char);
 };
 
-// Check if a character is an uppercase letter (Cyrillic or Latin)
+/**
+ * Checks if a character is an uppercase letter.
+ *
+ * @param char - The character to check.
+ * @returns True if the character is uppercase and differs from its lowercase version, false otherwise.
+ */
 const isUpperCaseLetter = (char: string): boolean => {
     return char !== char.toLowerCase() && char === char.toUpperCase();
 };
 
+/**
+ * Transliterates Cyrillic text to Latin script based on Uzbek language rules.
+ * Handles specific edge cases like 'е' (ye/e), 'ц' (ts), and smart casing for digraphs.
+ *
+ * @param text - The Cyrillic text to transliterate.
+ * @returns The transliterated Latin text.
+ */
 const transliterateCyrillicToLatin = (text: string): string => {
   let result = '';
   const len = text.length;
@@ -122,6 +139,13 @@ const transliterateCyrillicToLatin = (text: string): string => {
   return result;
 };
 
+/**
+ * Converts text based on the selected conversion mode.
+ *
+ * @param text - The input text to convert.
+ * @param mode - The conversion mode (e.g., Cyrillic to Latin, Uppercase, Binary, etc.).
+ * @returns The converted text string.
+ */
 export const convertText = (text: string, mode: ConversionMode): string => {
   if (!text) return '';
 

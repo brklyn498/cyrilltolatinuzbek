@@ -10,6 +10,13 @@ const SAMPLE_CODE = `Ўзбекистон Республикаси Марказ�
 Давлат тили - ўзбек тили.
 Бу матн лотин алифбосига автоматик равишда ўгирилади.`;
 
+/**
+ * The main application component for the Samarkand Text Converter.
+ * Manages the state for input text, output text, conversion mode, and UI interactions.
+ * Renders the layout including input area, control panel, and output area.
+ *
+ * @returns The rendered React component.
+ */
 const App: React.FC = () => {
   const [inputText, setInputText] = useState<string>(SAMPLE_CODE);
   const [outputText, setOutputText] = useState<string>('');
@@ -20,6 +27,10 @@ const App: React.FC = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Handles the text conversion process based on the current mode and input text.
+   * Updates the outputText state with the result.
+   */
   const handleConvert = () => {
     const result = convertText(inputText, currentMode);
     setOutputText(result);
@@ -44,12 +55,19 @@ const App: React.FC = () => {
     };
   }, []);
 
+  /**
+   * Clears the input and output text areas and sets focus back to the input.
+   */
   const handleClear = () => {
     setInputText('');
     setOutputText('');
     inputRef.current?.focus();
   };
 
+  /**
+   * Pastes text from the system clipboard into the input area.
+   * Handles permission errors or failures gracefully.
+   */
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -60,6 +78,10 @@ const App: React.FC = () => {
     }
   };
 
+  /**
+   * Copies the converted output text to the system clipboard.
+   * Shows a temporary 'Copied' state on the button.
+   */
   const handleCopy = () => {
     if (!outputText) return;
     navigator.clipboard.writeText(outputText);
@@ -67,6 +89,9 @@ const App: React.FC = () => {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  /**
+   * Triggers the download of the output text as a .txt file.
+   */
   const handleDownloadTxt = () => {
     if (!outputText) return;
     const element = document.createElement('a');
@@ -79,12 +104,18 @@ const App: React.FC = () => {
     setShowDownloadMenu(false);
   };
 
+  /**
+   * Triggers the generation and download of the output text as a PDF file.
+   */
   const handleDownloadPdf = () => {
     if (!outputText) return;
     generatePdf(outputText);
     setShowDownloadMenu(false);
   };
 
+  /**
+   * Toggles the visibility of the download dropdown menu.
+   */
   const toggleDownloadMenu = () => {
     if (!outputText) return;
     setShowDownloadMenu(!showDownloadMenu);
