@@ -4,6 +4,8 @@
 export enum ConversionMode {
   /** Transliterates Cyrillic text to Latin script. */
   CYRILLIC_TO_LATIN = 'LOTINCHAGA OTKAZISH',
+  /** Transliterates Latin text to Cyrillic script. */
+  LATIN_TO_CYRILLIC = 'KIRILLCHAGA OTKAZISH',
   /** Converts all characters to uppercase. */
   UPPERCASE = 'KATTA HARF',
   /** Converts all characters to lowercase. */

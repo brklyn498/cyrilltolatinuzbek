@@ -38,6 +38,46 @@ const CYRILLIC_TO_LATIN_MAP: { [key: string]: string } = {
   'е': 'e', // Default, handled specially in code but good to have fallback
 };
 
+const LATIN_TO_CYRILLIC_MAP: { [key: string]: string } = {
+  'a': 'а',
+  'b': 'б',
+  'v': 'в',
+  'g': 'г',
+  'd': 'д',
+  'j': 'ж',
+  'z': 'з',
+  'i': 'и',
+  'y': 'й',
+  'k': 'к',
+  'l': 'л',
+  'm': 'м',
+  'n': 'н',
+  'o': 'о',
+  'p': 'п',
+  'r': 'р',
+  's': 'с',
+  't': 'т',
+  'u': 'у',
+  'f': 'ф',
+  'x': 'х',
+  'e': 'е', // Basic mapping, handles 'ye' logic separately if needed or assumes user types 'e'
+  'q': 'қ',
+  'h': 'ҳ',
+  "'": 'ъ' // Often ' is hard sign or nothing, context dependent. But mapping back 1:1 is hard.
+};
+
+const LATIN_DIGRAPHS: { [key: string]: string } = {
+  'yo': 'ё',
+  'yu': 'ю',
+  'ya': 'я',
+  'ch': 'ч',
+  'sh': 'ш',
+  'ts': 'ц',
+  "o'": 'ў',
+  "g'": 'ғ',
+  'ye': 'е', // Handle explicit 'ye'
+};
+
 /**
  * Checks if a given character is a Cyrillic vowel.
  *
@@ -57,6 +97,27 @@ const isCyrillicVowel = (char: string): boolean => {
 const isUpperCaseLetter = (char: string): boolean => {
     return char !== char.toLowerCase() && char === char.toUpperCase();
 };
+
+/**
+ * Detects whether the text is predominantly Cyrillic or Latin.
+ * @param text The input text.
+ * @returns 'cyrillic' or 'latin' based on character count.
+ */
+export const detectTextScript = (text: string): 'cyrillic' | 'latin' => {
+    let cyrillicCount = 0;
+    let latinCount = 0;
+
+    for (const char of text) {
+        if (/[а-яА-ЯўқғҳЎҚҒҲ]/.test(char)) {
+            cyrillicCount++;
+        } else if (/[a-zA-Z]/.test(char)) {
+            latinCount++;
+        }
+    }
+
+    return cyrillicCount >= latinCount ? 'cyrillic' : 'latin';
+};
+
 
 /**
  * Transliterates Cyrillic text to Latin script based on Uzbek language rules.
@@ -140,6 +201,62 @@ const transliterateCyrillicToLatin = (text: string): string => {
 };
 
 /**
+ * Transliterates Latin text to Cyrillic script.
+ * Handles digraphs (sh, ch, ts, etc.) and ' logic.
+ *
+ * @param text The Latin text.
+ * @returns The Cyrillic text.
+ */
+const transliterateLatinToCyrillic = (text: string): string => {
+    let result = '';
+    const len = text.length;
+
+    for (let i = 0; i < len; i++) {
+        // Check for 2-char digraphs first
+        let digraphFound = false;
+
+        if (i + 1 < len) {
+            const twoChars = text.substring(i, i + 2);
+            const lowerTwoChars = twoChars.toLowerCase();
+
+            if (LATIN_DIGRAPHS[lowerTwoChars]) {
+                digraphFound = true;
+                const base = LATIN_DIGRAPHS[lowerTwoChars];
+
+                // Smart casing
+                const firstChar = twoChars[0];
+                const secondChar = twoChars[1];
+
+                if (isUpperCaseLetter(firstChar)) {
+                    result += base.toUpperCase();
+                } else {
+                    result += base;
+                }
+
+                i++; // Skip next char
+                continue;
+            }
+        }
+
+        const char = text[i];
+        const lowerChar = char.toLowerCase();
+
+        if (LATIN_TO_CYRILLIC_MAP[lowerChar]) {
+            const base = LATIN_TO_CYRILLIC_MAP[lowerChar];
+            if (isUpperCaseLetter(char)) {
+                result += base.toUpperCase();
+            } else {
+                result += base;
+            }
+        } else {
+            result += char;
+        }
+    }
+    return result;
+};
+
+
+/**
  * Converts text based on the selected conversion mode.
  *
  * @param text - The input text to convert.
@@ -152,6 +269,8 @@ export const convertText = (text: string, mode: ConversionMode): string => {
   switch (mode) {
     case ConversionMode.CYRILLIC_TO_LATIN:
       return transliterateCyrillicToLatin(text);
+    case ConversionMode.LATIN_TO_CYRILLIC:
+      return transliterateLatinToCyrillic(text);
     case ConversionMode.UPPERCASE:
       return text.toUpperCase();
     case ConversionMode.LOWERCASE:
