@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ConversionMode } from './types';
-import { convertText } from './utils/converter';
+import { convertText, detectTextScript } from './utils/converter';
 import { generatePdf } from './utils/pdfGenerator';
 import { RetroButton } from './components/RetroButton';
 
@@ -24,6 +24,9 @@ const App: React.FC = () => {
   const [isCopied, setIsCopied] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
+  // State to track if user has manually selected a mode to avoid auto-switching fighting the user
+  const [manualModeOverride, setManualModeOverride] = useState(false);
+
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
 
@@ -35,6 +38,33 @@ const App: React.FC = () => {
     const result = convertText(inputText, currentMode);
     setOutputText(result);
   };
+
+  /**
+   * Auto-detects the script of the input text and switches the mode accordingly,
+   * unless the user has manually selected a utility mode (like Binary, Hex, etc.)
+   * or explicitly overridden the transliteration direction.
+   */
+  useEffect(() => {
+    if (!inputText) return;
+
+    // Only auto-switch between transliteration modes if we are currently in a transliteration mode
+    // or if the input text clearly indicates a script change and we haven't locked the mode.
+    // For simplicity in this requirement: We will auto-switch between C2L and L2C based on detection.
+
+    // Check if current mode is one of the transliteration modes
+    const isTransliterationMode =
+        currentMode === ConversionMode.CYRILLIC_TO_LATIN ||
+        currentMode === ConversionMode.LATIN_TO_CYRILLIC;
+
+    if (isTransliterationMode && !manualModeOverride) {
+        const detectedScript = detectTextScript(inputText);
+        if (detectedScript === 'cyrillic' && currentMode !== ConversionMode.CYRILLIC_TO_LATIN) {
+            setCurrentMode(ConversionMode.CYRILLIC_TO_LATIN);
+        } else if (detectedScript === 'latin' && currentMode !== ConversionMode.LATIN_TO_CYRILLIC) {
+            setCurrentMode(ConversionMode.LATIN_TO_CYRILLIC);
+        }
+    }
+  }, [inputText, currentMode, manualModeOverride]);
 
   // Initial conversion and when input/mode changes
   useEffect(() => {
@@ -61,6 +91,7 @@ const App: React.FC = () => {
   const handleClear = () => {
     setInputText('');
     setOutputText('');
+    setManualModeOverride(false); // Reset manual override on clear
     inputRef.current?.focus();
   };
 
@@ -72,6 +103,7 @@ const App: React.FC = () => {
     try {
       const text = await navigator.clipboard.readText();
       setInputText(text);
+      setManualModeOverride(false); // Reset override on paste to allow auto-detection
     } catch (err) {
       console.error('Failed to read clipboard contents: ', err);
       alert('Brauzeringiz clipboard-ga ruxsat bermadi (Clipboard permission denied).');
@@ -121,6 +153,27 @@ const App: React.FC = () => {
     setShowDownloadMenu(!showDownloadMenu);
   };
 
+  /**
+   * Handles manual mode selection.
+   * Sets the mode and enables the override flag to prevent auto-detection from immediately reverting it.
+   */
+  const handleModeChange = (mode: ConversionMode) => {
+      setCurrentMode(mode);
+      // If user explicitly clicks a mode button, we consider it a manual override
+      setManualModeOverride(true);
+  };
+
+  /**
+   * Toggles between Cyrillic->Latin and Latin->Cyrillic
+   */
+  const toggleTransliterationMode = () => {
+      if (currentMode === ConversionMode.CYRILLIC_TO_LATIN) {
+          handleModeChange(ConversionMode.LATIN_TO_CYRILLIC);
+      } else {
+          handleModeChange(ConversionMode.CYRILLIC_TO_LATIN);
+      }
+  };
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-[#1A1A2E] via-[#4A2C40] to-[#E76F51] text-[#FDF6E3] font-mono p-4 md:p-8 flex flex-col items-center">
       
@@ -156,7 +209,13 @@ const App: React.FC = () => {
               <textarea
                 ref={inputRef}
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                onChange={(e) => {
+                    setInputText(e.target.value);
+                    // We don't reset manual override here to allow user to type in a specific mode if they chose it.
+                    // But if they want auto-detection back, they can clear.
+                    // Alternatively, we could be smarter here, but simple is better.
+                    if (inputText === '') setManualModeOverride(false);
+                }}
                 className="relative w-full h-[300px] lg:h-[500px] bg-[#FDF6E3] text-[#1a1a2e] p-4 font-mono text-sm md:text-base border-2 border-[#5C4033] outline-none focus:border-[#e76f51] resize-none shadow-inner-retro leading-relaxed"
                 placeholder="// Matnni shu yerga kiriting..."
                 spellCheck={false}
@@ -201,11 +260,13 @@ const App: React.FC = () => {
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <RetroButton
                     variant="accent"
-                    isActive={currentMode === ConversionMode.CYRILLIC_TO_LATIN}
-                    onClick={() => setCurrentMode(ConversionMode.CYRILLIC_TO_LATIN)}
-                    className="col-span-2 text-sm py-3 bg-[#F4A261] border-[#5C4033] font-bold"
+                    isActive={currentMode === ConversionMode.CYRILLIC_TO_LATIN || currentMode === ConversionMode.LATIN_TO_CYRILLIC}
+                    onClick={toggleTransliterationMode}
+                    className="col-span-2 text-sm py-3 bg-[#F4A261] border-[#5C4033] font-bold flex items-center justify-center gap-2"
                   >
-                    CYRILLIC -&gt; LATIN
+                    <span>CYRILLIC</span>
+                    <span className="text-lg">⇄</span>
+                    <span>LATIN</span>
                   </RetroButton>
 
                 {[
@@ -221,7 +282,7 @@ const App: React.FC = () => {
                     key={mode}
                     variant="accent"
                     isActive={currentMode === mode}
-                    onClick={() => setCurrentMode(mode)}
+                    onClick={() => handleModeChange(mode)}
                     className={`text-xs md:text-xs py-2 ${mode === ConversionMode.SENTENCE_CASE ? 'col-span-2' : ''}`}
                   >
                     {mode === ConversionMode.LOWERCASE ? 'KICHIK HARF' : 
@@ -234,23 +295,14 @@ const App: React.FC = () => {
                  <RetroButton
                     variant="accent"
                     isActive={currentMode === ConversionMode.UPPERCASE}
-                    onClick={() => setCurrentMode(ConversionMode.UPPERCASE)}
+                    onClick={() => handleModeChange(ConversionMode.UPPERCASE)}
                     className="col-span-2 mt-1 text-xs py-2"
                   >
                     KATTA HARF
                   </RetroButton>
               </div>
 
-              {/* Big Action Button */}
-              <div className="mt-8 pt-6 border-t-2 border-[#FDF6E3]/20 flex justify-center">
-                <RetroButton
-                  onClick={handleConvert}
-                  variant="primary"
-                  className="w-full py-4 text-lg md:text-xl bg-[#264653] text-white hover:bg-[#2A9D8F] tracking-widest"
-                >
-                  O'ZGARTIRISH
-                </RetroButton>
-              </div>
+              {/* Removed redundant "O'ZGARTIRISH" button as conversion is real-time */}
 
             </div>
           </div>
