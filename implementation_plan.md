@@ -1,55 +1,50 @@
-# Implementation Plan - History Functionality
+# Implementation Plan - PWA Integration
 
 ## Goal
-Implement a history feature that saves the last 10 conversions and allows users to restore them. This includes a new UI panel to view history and persistence using `localStorage`.
+Transform the application into a Progressive Web App (PWA) to enable offline usage, installation to home screen, and improved performance.
 
 ## User Review Required
 > [!NOTE]
-> History will be automatically saved 2 seconds after the user stops typing, or when they copy/download the text. This ensures we capture "finished" thoughts without spamming the history with every keystroke.
+> We will use `vite-plugin-pwa` for minimal configuration. The app will cache assets for offline use.
+> We need to generate a set of icons for the manifest. I will use a placeholder icon generator or create a simple SVG for now.
 
 ## Proposed Changes
 
-### 1. Type Definitions
-- **File**: `types.ts`
-- **Change**: Add `HistoryItem` interface.
-  ```typescript
-  export interface HistoryItem {
-    id: string;
-    original: string;
-    converted: string;
-    mode: ConversionMode;
-    timestamp: number;
-  }
+### 1. Dependencies
+- **Action**: Install `vite-plugin-pwa`.
+  ```bash
+  npm install vite-plugin-pwa -D
   ```
 
-### 2. State Management & Logic
-- **File**: `App.tsx`
-- **Change**:
-  - Add `history` state: `const [history, setHistory] = useState<HistoryItem[]>([]);`
-  - Add `useEffect` to load history from `localStorage` on mount.
-  - Add `addToHistory` function to handle saving (checking for duplicates, limiting to 10 items).
-  - Add `debouncedSave` logic using `setTimeout` in a `useEffect` dependent on `inputText`.
-  - Add `restoreHistoryItem` function to load a history item back into the main inputs.
+### 2. Vite Configuration
+- **File**: `vite.config.ts`
+- **Change**: Configure `VitePWA` plugin.
+  - Strategy: `generateSW` (simplest for this use case).
+  - RegisterType: `autoUpdate`.
+  - Manifest:
+    - Name: "Samarkand Text Converter"
+    - Short Name: "Samarkand"
+    - Description: "Uzbek Cyrillic-Latin Text Converter"
+    - Theme Color: "#1A1A2E"
+    - Icons: 192x192, 512x512.
 
-### 3. UI Components
-- **File**: `components/HistoryPanel.tsx` (NEW)
-- **Description**: A slide-out drawer or modal that lists history items.
-  - **Props**: `history: HistoryItem[]`, `onRestore: (item: HistoryItem) => void`, `onClose: () => void`, `isOpen: boolean`, `theme: 'dark' | 'light'`
-  - **Style**: Consistent with the Retro/Neobrutalist theme.
+### 3. Assets
+- **File**: `public/pwa-192x192.png`, `public/pwa-512x512.png`
+- **Action**: Generate simple icons using `generate_image` or creating SVGs.
 
-### 4. Integration
-- **File**: `App.tsx`
-- **Change**:
-  - Add a "History" button to the header (next to Theme Toggle?).
-  - Render `HistoryPanel` conditionally.
-  - Trigger `addToHistory` on "Copy" and "Download" actions as well to ensure immediate saving of important conversions.
+### 4. HTML Entry Point
+- **File**: `index.html`
+- **Change**: Ensure viewport and theme-color meta tags are correct.
+
+### 5. Service Worker Registration
+- **File**: `App.tsx` or `main.tsx` (if exists, otherwise `index.tsx`)
+- **Change**: `vite-plugin-pwa` handles registration automatically with `registerType: 'autoUpdate'`, but we might need to import `virtual:pwa-register` if we want custom UI for updates. For now, auto-update is fine.
 
 ## Verification Plan
 
 ### Manual Verification
-1. **Auto-Save**: Type text, wait 2 seconds. Reload page. Open history. Verify text is there.
-2. **Copy-Save**: Type text, click Copy immediately. Open history. Verify text is there.
-3. **Restore**: Click a history item. Verify input and output fields update.
-4. **Limit**: Create > 10 items. Verify only the latest 10 are kept.
-5. **Persistence**: Reload page. Verify history is still there.
-6. **Theme**: Toggle theme. Verify History Panel adapts.
+1.  **Build**: Run `npm run build`.
+2.  **Preview**: Run `npm run preview` (PWA doesn't always work in dev mode).
+3.  **Lighthouse**: Run Chrome DevTools Lighthouse audit to verify PWA criteria.
+4.  **Install**: Check if the "Install" icon appears in the address bar.
+5.  **Offline**: Go offline (DevTools > Network > Offline) and refresh the page. App should still load.

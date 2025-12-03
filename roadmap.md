@@ -96,7 +96,7 @@
 - [x] **History & Persistence**
     - [x] Save the last 5 conversions in `localStorage`.
     - [x] "Recent History" sidebar or modal to restore previous sessions.
-- [ ] **PWA (Progressive Web App)**
-    - [ ] Add `manifest.json`.
-    - [ ] Enable "Install to Home Screen" for mobile users.
-    - [ ] Offline capability.
+- [x] **PWA (Progressive Web App)**
+    - [x] Add `manifest.json`.
+    - [x] Enable "Install to Home Screen" for mobile users.
+    - [x] Offline capability.

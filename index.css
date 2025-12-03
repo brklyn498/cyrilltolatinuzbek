@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.bg-pattern-light {
+  background-color: #FDF6E3;
+  background-image: radial-gradient(#5C4033 0.5px, transparent 0.5px);
+  background-size: 20px 20px;
+}
+
+/* Ensure full height for the pattern */
+html, body {
+  height: 100%;
+}

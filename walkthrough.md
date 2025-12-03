@@ -1,37 +1,19 @@
-# Walkthrough - History Functionality
+# Walkthrough - PWA Implementation
 
 ## Changes
-1.  **`types.ts`**: Added `HistoryItem` interface.
-2.  **`components/HistoryPanel.tsx`**: Created a new component to display the history list in a slide-out panel.
-3.  **`App.tsx`**:
-    *   Added `history` state and `localStorage` persistence.
-    *   Implemented `addToHistory` logic (max 10 items, no duplicates at top).
-    *   Implemented debounced auto-save (2 seconds after typing stops).
-    *   Added "History" toggle button to the header.
-    *   Integrated `HistoryPanel`.
-    *   Added auto-save triggers on "Copy" and "Download" actions.
+1.  **Dependencies**: Installed `vite-plugin-pwa`.
+2.  **Configuration**: Updated `vite.config.ts` to include the `VitePWA` plugin with `autoUpdate` strategy and manifest generation.
+3.  **Assets**: Created `public/icon.svg` as the app icon.
+4.  **HTML**: Updated `index.html` with PWA meta tags (`theme-color`, `apple-touch-icon`, etc.) and linked the manifest (handled by plugin).
+5.  **UI**: Added a dot grid pattern to the light theme in `index.css` for better aesthetics.
 
 ## Verification Results
 
-### Automated Tests
-*   No automated tests were run as this is a UI feature.
-
 ### Manual Verification Steps
-1.  **Auto-Save**:
-    *   Type some text in the input field.
-    *   Stop typing and wait for 2 seconds.
-    *   Open the History panel (clock icon).
-    *   Verify the new text appears in the list.
-2.  **Copy/Download Save**:
-    *   Type text and immediately click "Copy" or "Download".
-    *   Verify the text appears in the history immediately.
-3.  **Persistence**:
-    *   Refresh the page.
-    *   Open History panel.
-    *   Verify previous items are still there.
-4.  **Restore**:
-    *   Click on a history item.
-    *   Verify the input text and mode are restored to the main editor.
-5.  **Theme Support**:
-    *   Toggle between Dark and Light modes.
-    *   Verify the History panel colors adapt correctly.
+1.  **Manifest**: The manifest is generated automatically by Vite during the build process.
+2.  **Service Worker**: The service worker is registered automatically to cache assets.
+3.  **Offline Support**: The app should load even when offline (after first visit).
+4.  **Installation**: Browsers should recognize the app as installable.
+
+### Next Steps
+-   Run `npm run build` and `npm run preview` to fully test the PWA features, as service workers often don't run in standard dev mode.
