@@ -1,0 +1,5 @@
+{
+  "name": "Samarkand Text Converter",
+  "description": "A neo-brutalist text conversion tool featuring Uzbek Cyrillic-Latin transliteration and case conversion.",
+  "requestFramePermissions": []
+}

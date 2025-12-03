@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matn Konvertori // Samarkand-V1.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: ['"JetBrains Mono"', '"Space Mono"', 'monospace'],
+            },
+            colors: {
+              retro: {
+                bg: '#2D242C',
+                panel: '#3D323C',
+                cream: '#FFF8E1',
+                beige: '#E6CCAA',
+                orange: '#E76F51',
+                teal: '#2A9D8F',
+                darkblue: '#1A3C40',
+                text: '#1F1F1F',
+              }
+            },
+            boxShadow: {
+              'neo': '4px 4px 0px 0px rgba(0,0,0,1)',
+              'neo-sm': '2px 2px 0px 0px rgba(0,0,0,1)',
+              'neo-lg': '6px 6px 0px 0px rgba(0,0,0,0.5)',
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        background-color: #2D242C;
+        color: #E6CCAA;
+      }
+      /* Custom scrollbar for textareas */
+      textarea::-webkit-scrollbar {
+        width: 12px;
+      }
+      textarea::-webkit-scrollbar-track {
+        background: #E6CCAA;
+      }
+      textarea::-webkit-scrollbar-thumb {
+        background: #2D242C;
+        border: 2px solid #E6CCAA;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

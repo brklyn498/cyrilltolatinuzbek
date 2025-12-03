@@ -3,6 +3,7 @@ import { ConversionMode } from './types';
 import { convertText, detectTextScript } from './utils/converter';
 import { generatePdf } from './utils/pdfGenerator';
 import { RetroButton } from './components/RetroButton';
+import { RetroDropdown } from './components/RetroDropdown';
 
 // Initial sample text in Uzbek Cyrillic to demonstrate the feature
 const SAMPLE_CODE = `Ўзбекистон Республикаси Марказий Осиёнинг марказида жойлашган давлатдир.
@@ -23,6 +24,7 @@ const App: React.FC = () => {
   const [currentMode, setCurrentMode] = useState<ConversionMode>(ConversionMode.CYRILLIC_TO_LATIN);
   const [isCopied, setIsCopied] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   // State to track if user has manually selected a mode to avoid auto-switching fighting the user
   const [manualModeOverride, setManualModeOverride] = useState(false);
@@ -53,18 +55,19 @@ const App: React.FC = () => {
 
     // Check if current mode is one of the transliteration modes
     const isTransliterationMode =
-        currentMode === ConversionMode.CYRILLIC_TO_LATIN ||
-        currentMode === ConversionMode.LATIN_TO_CYRILLIC;
+      currentMode === ConversionMode.CYRILLIC_TO_LATIN ||
+      currentMode === ConversionMode.LATIN_TO_CYRILLIC;
 
-    if (isTransliterationMode && !manualModeOverride) {
-        const detectedScript = detectTextScript(inputText);
-        if (detectedScript === 'cyrillic' && currentMode !== ConversionMode.CYRILLIC_TO_LATIN) {
-            setCurrentMode(ConversionMode.CYRILLIC_TO_LATIN);
-        } else if (detectedScript === 'latin' && currentMode !== ConversionMode.LATIN_TO_CYRILLIC) {
-            setCurrentMode(ConversionMode.LATIN_TO_CYRILLIC);
-        }
+    if (isTransliterationMode) {
+      const detectedScript = detectTextScript(inputText);
+      // Auto-switch based on detected script, ignoring manual override for better UX as requested
+      if (detectedScript === 'cyrillic' && currentMode !== ConversionMode.CYRILLIC_TO_LATIN) {
+        setCurrentMode(ConversionMode.CYRILLIC_TO_LATIN);
+      } else if (detectedScript === 'latin' && currentMode !== ConversionMode.LATIN_TO_CYRILLIC) {
+        setCurrentMode(ConversionMode.LATIN_TO_CYRILLIC);
+      }
     }
-  }, [inputText, currentMode, manualModeOverride]);
+  }, [inputText, currentMode]);
 
   // Initial conversion and when input/mode changes
   useEffect(() => {
@@ -75,13 +78,13 @@ const App: React.FC = () => {
   // Click outside to close menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-        if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
-            setShowDownloadMenu(false);
-        }
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
+        setShowDownloadMenu(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -158,148 +161,159 @@ const App: React.FC = () => {
    * Sets the mode and enables the override flag to prevent auto-detection from immediately reverting it.
    */
   const handleModeChange = (mode: ConversionMode) => {
-      setCurrentMode(mode);
-      // If user explicitly clicks a mode button, we consider it a manual override
-      setManualModeOverride(true);
+    setCurrentMode(mode);
+    // If user explicitly clicks a mode button, we consider it a manual override
+    setManualModeOverride(true);
   };
 
   /**
    * Toggles between Cyrillic->Latin and Latin->Cyrillic
    */
   const toggleTransliterationMode = () => {
-      if (currentMode === ConversionMode.CYRILLIC_TO_LATIN) {
-          handleModeChange(ConversionMode.LATIN_TO_CYRILLIC);
-      } else {
-          handleModeChange(ConversionMode.CYRILLIC_TO_LATIN);
-      }
+    if (outputText) {
+      setInputText(outputText);
+    }
+
+    if (currentMode === ConversionMode.CYRILLIC_TO_LATIN) {
+      handleModeChange(ConversionMode.LATIN_TO_CYRILLIC);
+    } else {
+      handleModeChange(ConversionMode.CYRILLIC_TO_LATIN);
+    }
+  };
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-[#1A1A2E] via-[#4A2C40] to-[#E76F51] text-[#FDF6E3] font-mono p-4 md:p-8 flex flex-col items-center">
-      
+    <div className={`min-h-screen w-full font-mono p-4 md:p-8 flex flex-col items-center transition-colors duration-300 ${theme === 'dark' ? 'bg-gradient-to-b from-[#1A1A2E] via-[#4A2C40] to-[#E76F51] text-[#FDF6E3]' : 'bg-pattern-light text-[#1a1a2e]'}`}>
+
       {/* Main Container Frame */}
       <div className="w-full max-w-7xl border-4 border-[#FDF6E3] p-4 md:p-6 relative bg-white/5 backdrop-blur-sm shadow-2xl rounded-sm">
-        
+
         {/* Decorative Corner Lines */}
         <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-[#FDF6E3] -mt-1 -ml-1"></div>
         <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-[#FDF6E3] -mt-1 -mr-1"></div>
         <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-[#FDF6E3] -mb-1 -ml-1"></div>
         <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#FDF6E3] -mb-1 -mr-1"></div>
 
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          className={`absolute top-4 right-4 z-50 p-2 border-2 shadow-neo hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all duration-300 active:rotate-180 ${theme === 'dark' ? 'bg-[#1e2336] border-[#FDF6E3] text-[#FDF6E3]' : 'bg-[#FDF6E3] border-[#5C4033] text-[#5C4033]'}`}
+          title={theme === 'dark' ? "Yorug' rejimga o'tish" : "Tungi rejimga o'tish"}
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+
         {/* Header */}
         <header className="flex justify-center mb-8 md:mb-12 relative">
-           <div className="hidden md:block absolute top-1/2 left-0 w-full h-[2px] bg-[#FDF6E3] -z-10"></div>
-           <div className="bg-[#1e2336] px-6 py-2 border-2 border-[#FDF6E3] shadow-neo transform -rotate-1 z-10">
-              <h1 className="text-xl md:text-3xl font-bold tracking-[0.2em] text-[#F4A261] drop-shadow-md font-retro">
-                MATN KONVERTORI // SAMARKAND-V1.0
-              </h1>
-           </div>
+          <div className={`hidden md:block absolute top-1/2 left-0 w-full h-[2px] -z-10 ${theme === 'dark' ? 'bg-[#FDF6E3]' : 'bg-[#5C4033]'}`}></div>
+          <div className={`px-6 py-2 border-2 shadow-neo transform -rotate-1 z-10 relative transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1e2336] border-[#FDF6E3]' : 'bg-[#FDF6E3] border-[#5C4033]'}`}>
+            <h1 className={`text-xl md:text-3xl font-bold tracking-[0.2em] drop-shadow-md font-retro select-none ${theme === 'dark' ? 'text-[#F4A261]' : 'text-[#5C4033]'}`}>
+              MATN KONVERTORI // SAMARKAND-V1.0
+            </h1>
+          </div>
         </header>
 
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          
+
           {/* Left Column: Input */}
           <div className="lg:col-span-4 flex flex-col gap-4">
-            <h2 className="text-sm md:text-base font-bold tracking-widest text-[#FDF6E3]/80 uppercase mb-1">
+            <h2 className={`text-sm md:text-base font-bold tracking-widest uppercase mb-1 ${theme === 'dark' ? 'text-[#FDF6E3]/80' : 'text-[#5C4033]'}`}>
               Kirish Matni (Asl)
             </h2>
-            <div className="flex-grow relative group">
+            <div className="relative group">
               <div className="absolute inset-0 bg-[#F4A261] translate-x-2 translate-y-2 rounded-sm"></div>
+
+              {/* Handy Buttons */}
+              <div className="absolute top-2 right-2 flex gap-2 z-10">
+                <button
+                  onClick={handlePaste}
+                  className="p-2 bg-[#d4a373] text-[#1a1a2e] border-2 border-[#5C4033] shadow-neo-sm hover:bg-[#e9c46a] transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                  title="Xotiradan Joylashtirish"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+                <button
+                  onClick={handleClear}
+                  className="p-2 bg-[#e94560] text-white border-2 border-[#5C4033] shadow-neo-sm hover:bg-red-600 transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                  title="Kirishni Tozalash"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </button>
+              </div>
+
               <textarea
                 ref={inputRef}
                 value={inputText}
                 onChange={(e) => {
-                    setInputText(e.target.value);
-                    // We don't reset manual override here to allow user to type in a specific mode if they chose it.
-                    // But if they want auto-detection back, they can clear.
-                    // Alternatively, we could be smarter here, but simple is better.
-                    if (inputText === '') setManualModeOverride(false);
+                  setInputText(e.target.value);
+                  // We don't reset manual override here to allow user to type in a specific mode if they chose it.
+                  // But if they want auto-detection back, they can clear.
+                  // Alternatively, we could be smarter here, but simple is better.
+                  if (inputText === '') setManualModeOverride(false);
                 }}
-                className="relative w-full h-[300px] lg:h-[500px] bg-[#FDF6E3] text-[#1a1a2e] p-4 font-mono text-sm md:text-base border-2 border-[#5C4033] outline-none focus:border-[#e76f51] resize-none shadow-inner-retro leading-relaxed"
+                className="relative w-full h-[300px] lg:h-[500px] bg-[#FDF6E3] text-[#1a1a2e] p-4 pt-12 font-mono text-sm md:text-base border-2 border-[#5C4033] outline-none focus:border-[#e76f51] resize-none shadow-inner-retro leading-relaxed"
                 placeholder="// Matnni shu yerga kiriting..."
                 spellCheck={false}
               />
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2">
-              <RetroButton 
-                onClick={handleClear} 
-                variant="secondary" 
-                className="flex-1 text-xs md:text-sm py-2 bg-[#d4a373]"
-              >
-                Kirishni Tozalash
-              </RetroButton>
-              <RetroButton 
-                onClick={handlePaste} 
-                variant="secondary" 
-                className="flex-1 text-xs md:text-sm py-2 bg-[#d4a373]"
-              >
-                Xotiradan Joylashtirish
-              </RetroButton>
             </div>
           </div>
 
           {/* Middle Column: Controls */}
           <div className="lg:col-span-4 flex flex-col justify-center items-center gap-6 relative py-4 lg:py-0">
-             {/* Decorative vertical line for desktop */}
+            {/* Decorative vertical line for desktop */}
             <div className="hidden lg:block absolute h-full w-[2px] bg-[#FDF6E3]/30 left-0 top-0"></div>
             <div className="hidden lg:block absolute h-full w-[2px] bg-[#FDF6E3]/30 right-0 top-0"></div>
 
             <div className="w-full max-w-sm border-2 border-[#FDF6E3]/50 bg-[#1a1a2e]/60 backdrop-blur-md p-6 rounded-sm shadow-neo">
-              
-              <div className="mb-4 text-center">
-                <label className="text-xs font-bold tracking-widest text-[#F4A261] uppercase">Conversion Mode</label>
-                <div className="mt-2 w-full bg-[#FDF6E3] border-2 border-[#5C4033] p-2 flex items-center justify-between cursor-default shadow-neo-sm">
-                  <span className="text-[#1a1a2e] font-bold truncate pr-2">{currentMode}</span>
-                  <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-[#5C4033]"></div>
-                </div>
-              </div>
+
+
 
               {/* Mode Buttons Grid */}
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <RetroButton
-                    variant="accent"
-                    isActive={currentMode === ConversionMode.CYRILLIC_TO_LATIN || currentMode === ConversionMode.LATIN_TO_CYRILLIC}
-                    onClick={toggleTransliterationMode}
-                    className="col-span-2 text-sm py-3 bg-[#F4A261] border-[#5C4033] font-bold flex items-center justify-center gap-2"
-                  >
-                    <span>CYRILLIC</span>
-                    <span className="text-lg">⇄</span>
-                    <span>LATIN</span>
-                  </RetroButton>
+                  variant="accent"
+                  isActive={currentMode === ConversionMode.CYRILLIC_TO_LATIN || currentMode === ConversionMode.LATIN_TO_CYRILLIC}
+                  onClick={toggleTransliterationMode}
+                  className="col-span-2 text-sm py-3 bg-[#F4A261] border-[#5C4033] font-bold flex items-center justify-center gap-2"
+                >
+                  <span>
+                    {currentMode === ConversionMode.LATIN_TO_CYRILLIC ? 'LATIN' : 'CYRILLIC'}
+                  </span>
+                  <span className="text-lg">→</span>
+                  <span>
+                    {currentMode === ConversionMode.LATIN_TO_CYRILLIC ? 'CYRILLIC' : 'LATIN'}
+                  </span>
+                </RetroButton>
 
-                {[
-                  ConversionMode.LOWERCASE,
-                  ConversionMode.TITLE_CASE,
-                  ConversionMode.SENTENCE_CASE,
-                  ConversionMode.REVERSE,
-                  ConversionMode.BINARY,
-                  ConversionMode.HEX,
-                  ConversionMode.BASE64
-                ].map((mode) => (
-                  <RetroButton
-                    key={mode}
-                    variant="accent"
-                    isActive={currentMode === mode}
-                    onClick={() => handleModeChange(mode)}
-                    className={`text-xs md:text-xs py-2 ${mode === ConversionMode.SENTENCE_CASE ? 'col-span-2' : ''}`}
-                  >
-                    {mode === ConversionMode.LOWERCASE ? 'KICHIK HARF' : 
-                     mode === ConversionMode.TITLE_CASE ? 'SARLAVHA HARFI' :
-                     mode === ConversionMode.SENTENCE_CASE ? 'GAP BOSHI HARFI' :
-                     mode}
-                  </RetroButton>
-                ))}
-                
-                 <RetroButton
-                    variant="accent"
-                    isActive={currentMode === ConversionMode.UPPERCASE}
-                    onClick={() => handleModeChange(ConversionMode.UPPERCASE)}
-                    className="col-span-2 mt-1 text-xs py-2"
-                  >
-                    KATTA HARF
-                  </RetroButton>
+                <div className="col-span-2">
+                  <RetroDropdown
+                    label="Qo'shimcha"
+                    value={currentMode}
+                    onChange={(value) => handleModeChange(value as ConversionMode)}
+                    options={[
+                      { label: 'KICHIK HARF', value: ConversionMode.LOWERCASE },
+                      { label: 'SARLAVHA HARFI', value: ConversionMode.TITLE_CASE },
+                      { label: 'GAP BOSHI HARFI', value: ConversionMode.SENTENCE_CASE },
+                      { label: 'TESKARI', value: ConversionMode.REVERSE },
+                      { label: 'IKKILIK', value: ConversionMode.BINARY },
+                      { label: 'HEX', value: ConversionMode.HEX },
+                      { label: 'BASE64', value: ConversionMode.BASE64 },
+                      { label: 'KATTA HARF', value: ConversionMode.UPPERCASE },
+                    ]}
+                  />
+                </div>
               </div>
 
               {/* Removed redundant "O'ZGARTIRISH" button as conversion is real-time */}
@@ -309,69 +323,83 @@ const App: React.FC = () => {
 
           {/* Right Column: Output */}
           <div className="lg:col-span-4 flex flex-col gap-4">
-            <h2 className="text-sm md:text-base font-bold tracking-widest text-[#FDF6E3]/80 uppercase mb-1">
+            <h2 className={`text-sm md:text-base font-bold tracking-widest uppercase mb-1 ${theme === 'dark' ? 'text-[#FDF6E3]/80' : 'text-[#5C4033]'}`}>
               Chiqish Matni (O'zgartirilgan)
             </h2>
-            <div className="flex-grow relative group">
+            <div className="relative group">
               <div className="absolute inset-0 bg-[#2A9D8F] translate-x-2 translate-y-2 rounded-sm"></div>
+
+              {/* Handy Copy Button */}
+              <div className="absolute top-2 right-2 z-10">
+                <button
+                  onClick={handleCopy}
+                  className={`p-2 text-[#1a1a2e] border-2 border-[#5C4033] shadow-neo-sm transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none ${isCopied ? 'bg-[#2A9D8F] text-white' : 'bg-[#e9c46a] hover:bg-[#f4a261]'}`}
+                  title="Nusxalash"
+                >
+                  {isCopied ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  )}
+                </button>
+              </div>
+
               <textarea
                 value={outputText}
                 readOnly
-                className="relative w-full h-[300px] lg:h-[500px] bg-[#FDF6E3] text-[#1a1a2e] p-4 font-mono text-sm md:text-base border-2 border-[#5C4033] outline-none resize-none shadow-inner-retro leading-relaxed"
+                className="relative w-full h-[300px] lg:h-[500px] bg-[#FDF6E3] text-[#1a1a2e] p-4 pt-12 font-mono text-sm md:text-base border-2 border-[#5C4033] outline-none resize-none shadow-inner-retro leading-relaxed"
                 placeholder="// Natija shu yerda paydo bo'ladi..."
               />
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2 relative">
 
               <div className="flex-1 relative" ref={downloadMenuRef}>
-                 <RetroButton
-                    onClick={toggleDownloadMenu}
-                    variant="secondary"
-                    disabled={!inputText}
-                    className="w-full h-full text-xs md:text-sm py-2 bg-[#e9c46a] flex items-center justify-center gap-2"
-                  >
-                    Fayl Sifatida Yuklash
-                    {/* Small arrow icon */}
-                    <span className={`transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </RetroButton>
+                <RetroButton
+                  onClick={toggleDownloadMenu}
+                  variant="secondary"
+                  disabled={!inputText}
+                  className="w-full h-full text-xs md:text-sm py-2 bg-[#e9c46a] flex items-center justify-center gap-2"
+                >
+                  Fayl Sifatida Yuklash
+                  {/* Small arrow icon */}
+                  <span className={`transition-transform duration-200 ${showDownloadMenu ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </RetroButton>
 
-                  {/* Dropdown Menu */}
-                  {showDownloadMenu && (
-                    <div className="absolute bottom-full left-0 w-full mb-2 bg-[#FDF6E3] border-2 border-[#5C4033] shadow-neo z-50 flex flex-col p-1 animate-in fade-in zoom-in duration-200">
-                         <button
-                            onClick={handleDownloadTxt}
-                            className="text-left px-4 py-3 hover:bg-[#F4A261] hover:text-[#1a1a2e] text-[#5C4033] font-bold font-mono text-xs uppercase tracking-wider border-b border-[#5C4033]/20 last:border-0"
-                         >
-                            TXT (.txt)
-                         </button>
-                         <button
-                            onClick={handleDownloadPdf}
-                            className="text-left px-4 py-3 hover:bg-[#F4A261] hover:text-[#1a1a2e] text-[#5C4033] font-bold font-mono text-xs uppercase tracking-wider"
-                         >
-                            PDF (.pdf)
-                         </button>
-                    </div>
-                  )}
+                {/* Dropdown Menu */}
+                {showDownloadMenu && (
+                  <div className="absolute bottom-full left-0 w-full mb-2 bg-[#FDF6E3] border-2 border-[#5C4033] shadow-neo z-50 flex flex-col p-1 animate-in fade-in zoom-in duration-200">
+                    <button
+                      onClick={handleDownloadTxt}
+                      className="text-left px-4 py-3 hover:bg-[#F4A261] hover:text-[#1a1a2e] text-[#5C4033] font-bold font-mono text-xs uppercase tracking-wider border-b border-[#5C4033]/20 last:border-0"
+                    >
+                      TXT (.txt)
+                    </button>
+                    <button
+                      onClick={handleDownloadPdf}
+                      className="text-left px-4 py-3 hover:bg-[#F4A261] hover:text-[#1a1a2e] text-[#5C4033] font-bold font-mono text-xs uppercase tracking-wider"
+                    >
+                      PDF (.pdf)
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <RetroButton 
-                onClick={handleCopy} 
-                variant="secondary" 
-                disabled={!inputText}
-                className="flex-1 text-xs md:text-sm py-2 bg-[#e9c46a]"
-              >
-                {isCopied ? 'Nusxalandi!' : 'Chiqishni Nusxalash'}
-              </RetroButton>
+
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <footer className="mt-12 text-center border-t border-[#FDF6E3]/30 pt-4">
-          <p className="text-[10px] md:text-xs font-mono text-[#FDF6E3]/60 tracking-widest uppercase">
+        <footer className={`mt-12 text-center border-t pt-4 ${theme === 'dark' ? 'border-[#FDF6E3]/30' : 'border-[#5C4033]/30'}`}>
+          <p className={`text-[10px] md:text-xs font-mono tracking-widest uppercase ${theme === 'dark' ? 'text-[#FDF6E3]/60' : 'text-[#5C4033]/60'}`}>
             UZBEK DIGITAL HERITAGE LAB TOMONIDAN ISHLAB CHIQILGAN // TONGGI NEOBRUTALIZM 2024 // V1.0 BETA
           </p>
           <div className="flex justify-center gap-4 mt-2">

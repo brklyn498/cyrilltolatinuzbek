@@ -1,56 +1,62 @@
 <!DOCTYPE html>
 <html lang="uz">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Matn Konvertori // SAMARKAND-V1.0</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=VT323&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'sam-beige': '#FDF6E3',
-              'sam-dark': '#1a1a2e',
-              'sam-orange': '#e94560',
-              'sam-teal': '#2A9D8F',
-              'sam-gold': '#D4A373',
-              'sam-border': '#5C4033',
-            },
-            fontFamily: {
-              mono: ['"JetBrains Mono"', 'monospace'],
-              retro: ['"VT323"', 'monospace'],
-            },
-            boxShadow: {
-              'neo': '4px 4px 0px 0px rgba(0,0,0,0.3)',
-              'neo-sm': '2px 2px 0px 0px rgba(0,0,0,0.3)',
-              'neo-hover': '2px 2px 0px 0px rgba(0,0,0,0.3)',
-              'inner-retro': 'inset 2px 2px 6px rgba(0,0,0,0.1)',
-            }
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>Matn Konvertori // SAMARKAND-V1.0</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=VT323&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'sam-beige': '#FDF6E3',
+            'sam-dark': '#1a1a2e',
+            'sam-orange': '#e94560',
+            'sam-teal': '#2A9D8F',
+            'sam-gold': '#D4A373',
+            'sam-border': '#5C4033',
+          },
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+            retro: ['"VT323"', 'monospace'],
+          },
+          boxShadow: {
+            'neo': '4px 4px 0px 0px rgba(0,0,0,0.3)',
+            'neo-sm': '2px 2px 0px 0px rgba(0,0,0,0.3)',
+            'neo-hover': '2px 2px 0px 0px rgba(0,0,0,0.3)',
+            'inner-retro': 'inset 2px 2px 6px rgba(0,0,0,0.1)',
           }
         }
       }
-    </script>
-    <style>
-      body {
-        margin: 0;
-        overflow-x: hidden;
-      }
-      /* Custom scrollbar for textareas */
-      textarea::-webkit-scrollbar {
-        width: 12px;
-      }
-      textarea::-webkit-scrollbar-track {
-        background: #e0d8c0; 
-      }
-      textarea::-webkit-scrollbar-thumb {
-        background: #5C4033; 
-        border: 2px solid #e0d8c0;
-      }
-    </style>
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    /* Custom scrollbar for textareas */
+    textarea::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    textarea::-webkit-scrollbar-track {
+      background: #e0d8c0;
+    }
+
+    textarea::-webkit-scrollbar-thumb {
+      background: #5C4033;
+      border: 2px solid #e0d8c0;
+    }
+  </style>
   <script type="importmap">
 {
   "imports": {
@@ -60,10 +66,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
 </html>
