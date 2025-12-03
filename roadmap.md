@@ -84,3 +84,19 @@
     - [ ] Verify `Ў`, `Қ`, `Ғ`, `Ҳ` translate correctly.
 - [ ] **Test: Browser Compatibility**
     - [ ] Check functionality on Mobile Chrome vs Desktop.
+
+---
+
+## 🚀 Phase 6: Advanced Functionality (Proposed)
+*Enhance the user experience with power-user features.*
+
+- [ ] **File Import System**
+    - [ ] Drag & Drop or Click to Upload `.txt` files.
+    - [ ] Auto-populate input field with file content.
+- [ ] **History & Persistence**
+    - [ ] Save the last 5 conversions in `localStorage`.
+    - [ ] "Recent History" sidebar or modal to restore previous sessions.
+- [ ] **PWA (Progressive Web App)**
+    - [ ] Add `manifest.json`.
+    - [ ] Enable "Install to Home Screen" for mobile users.
+    - [ ] Offline capability.

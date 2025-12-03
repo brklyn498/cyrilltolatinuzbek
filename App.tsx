@@ -28,9 +28,16 @@ const App: React.FC = () => {
 
   // State to track if user has manually selected a mode to avoid auto-switching fighting the user
   const [manualModeOverride, setManualModeOverride] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isWrongZone, setIsWrongZone] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
+
+  // Refs to track drag depth to prevent flickering
+  const dragCounter = useRef(0);
+  const dragCounterOutput = useRef(0);
 
   /**
    * Handles the text conversion process based on the current mode and input text.
@@ -111,6 +118,127 @@ const App: React.FC = () => {
       console.error('Failed to read clipboard contents: ', err);
       alert('Brauzeringiz clipboard-ga ruxsat bermadi (Clipboard permission denied).');
     }
+  };
+
+  /**
+   * Processes the uploaded file (validates and reads).
+   */
+  const processFile = (file: File) => {
+    // Validation: Check file type
+    if (!file.name.toLowerCase().endsWith('.txt') && file.type !== 'text/plain') {
+      alert("Faqat .txt formatidagi fayllarni yuklash mumkin! (Only .txt files are allowed)");
+      return;
+    }
+
+    // Validation: Check file size (Limit: 5MB)
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE) {
+      alert("Fayl hajmi juda katta! Maksimal hajm: 5MB. (File is too large! Max size: 5MB)");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (content) {
+        setInputText(content);
+        setManualModeOverride(false); // Allow auto-detection for the new content
+      }
+    };
+
+    reader.onerror = () => {
+      alert("Faylni o'qishda xatolik yuz berdi. (Error reading file)");
+      console.error("FileReader error:", reader.error);
+    };
+
+    reader.readAsText(file);
+  };
+
+  /**
+   * Handles file upload from the system via input.
+   */
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    processFile(file);
+    event.target.value = ''; // Reset input
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current += 1;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current -= 1;
+    if (dragCounter.current === 0) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    setIsWrongZone(false);
+    dragCounter.current = 0;
+    dragCounterOutput.current = 0;
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const handleOutputDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterOutput.current += 1;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsWrongZone(true);
+      setIsDragging(true); // Also highlight the correct zone
+    }
+  };
+
+  const handleOutputDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterOutput.current -= 1;
+    if (dragCounterOutput.current === 0) {
+      setIsWrongZone(false);
+      setIsDragging(false);
+    }
+  };
+
+  const handleOutputDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleOutputDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsWrongZone(false);
+    setIsDragging(false);
+    dragCounter.current = 0;
+    dragCounterOutput.current = 0;
+    // No action, just prevent default
+  };
+
+  const handleTriggerFileUpload = () => {
+    fileInputRef.current?.click();
   };
 
   /**
@@ -224,11 +352,54 @@ const App: React.FC = () => {
             <h2 className={`text-sm md:text-base font-bold tracking-widest uppercase mb-1 ${theme === 'dark' ? 'text-[#FDF6E3]/80' : 'text-[#5C4033]'}`}>
               Kirish Matni (Asl)
             </h2>
-            <div className="relative group">
+            <div
+              className="relative group"
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+            >
               <div className="absolute inset-0 bg-[#F4A261] translate-x-2 translate-y-2 rounded-sm"></div>
+
+              {/* Drag & Drop Overlay */}
+              {isDragging && (
+                <div className={`absolute inset-0 z-20 bg-[#FDF6E3]/90 border-4 border-dashed ${isWrongZone ? 'border-[#2A9D8F] animate-pulse' : 'border-[#5C4033]'} flex flex-col items-center justify-center pointer-events-none animate-in fade-in duration-200`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${isWrongZone ? 'text-[#2A9D8F]' : 'text-[#5C4033]'} mb-4 animate-bounce`}>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <p className={`${isWrongZone ? 'text-[#2A9D8F]' : 'text-[#5C4033]'} font-bold text-lg uppercase tracking-widest`}>
+                    {isWrongZone ? "Faylni BU YERGA tashlang!" : "Faylni shu yerga tashlang"}
+                  </p>
+                  <p className={`${isWrongZone ? 'text-[#2A9D8F]/70' : 'text-[#5C4033]/70'} text-sm mt-2 font-mono`}>
+                    {isWrongZone ? "(Chap tarafga)" : "(.txt)"}
+                  </p>
+                </div>
+              )}
 
               {/* Handy Buttons */}
               <div className="absolute top-2 right-2 flex gap-2 z-10">
+                {/* Hidden File Input */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept=".txt,text/plain"
+                  className="hidden"
+                />
+
+                <button
+                  onClick={handleTriggerFileUpload}
+                  className="p-2 bg-[#2A9D8F] text-white border-2 border-[#5C4033] shadow-neo-sm hover:bg-[#264653] transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                  title="Fayl Yuklash (.txt)"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </button>
                 <button
                   onClick={handlePaste}
                   className="p-2 bg-[#d4a373] text-[#1a1a2e] border-2 border-[#5C4033] shadow-neo-sm hover:bg-[#e9c46a] transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
@@ -326,8 +497,33 @@ const App: React.FC = () => {
             <h2 className={`text-sm md:text-base font-bold tracking-widest uppercase mb-1 ${theme === 'dark' ? 'text-[#FDF6E3]/80' : 'text-[#5C4033]'}`}>
               Chiqish Matni (O'zgartirilgan)
             </h2>
-            <div className="relative group">
+            <div
+              className="relative group"
+              onDragEnter={handleOutputDragEnter}
+              onDragLeave={handleOutputDragLeave}
+              onDragOver={handleOutputDragOver}
+              onDrop={handleOutputDrop}
+            >
               <div className="absolute inset-0 bg-[#2A9D8F] translate-x-2 translate-y-2 rounded-sm"></div>
+
+              {/* Wrong Zone Overlay */}
+              {isWrongZone && (
+                <div className="absolute inset-0 z-20 bg-[#e94560]/90 border-4 border-dashed border-white flex flex-col items-center justify-center pointer-events-none animate-in fade-in duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white mb-4 animate-pulse">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                  </svg>
+                  <p className="text-white font-bold text-lg uppercase tracking-widest text-center px-4">Bu yerga emas!</p>
+                  <div className="flex items-center gap-2 mt-2 text-white/90 font-mono text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="19" y1="12" x2="5" y2="12"></line>
+                      <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Chap tarafga o'ting</span>
+                  </div>
+                </div>
+              )}
 
               {/* Handy Copy Button */}
               <div className="absolute top-2 right-2 z-10">
