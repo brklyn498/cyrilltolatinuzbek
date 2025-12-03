@@ -36,3 +36,19 @@ export interface ConverterState {
   /** The currently selected conversion mode. */
   mode: ConversionMode;
 }
+
+/**
+ * Interface representing a single item in the conversion history.
+ */
+export interface HistoryItem {
+  /** Unique identifier for the history item. */
+  id: string;
+  /** The original input text. */
+  original: string;
+  /** The converted output text. */
+  converted: string;
+  /** The mode used for this conversion. */
+  mode: ConversionMode;
+  /** Timestamp of when the conversion was saved. */
+  timestamp: number;
+}
