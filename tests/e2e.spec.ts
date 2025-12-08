@@ -53,11 +53,12 @@ test.describe('Samarkand Text Converter E2E', () => {
     // Mock clipboard write if necessary, but browsers usually allow writeText in active tab.
     // However, in headless mode it can be restricted.
     // Let's try to click and see if the text changes.
-    const copyBtn = page.getByRole('button', { name: /Chiqishni Nusxalash/i });
+    // The button has title="Nusxalash" initially.
+    const copyBtn = page.getByRole('button', { name: "Nusxalash", exact: true });
     await copyBtn.click();
 
-    // Check for feedback text
-    await expect(page.getByRole('button', { name: /Nusxalandi!/i })).toBeVisible();
+    // Check for feedback text (the title changes to "Nusxalandi!")
+    await expect(page.getByRole('button', { name: "Nusxalandi!", exact: true })).toBeVisible();
   });
 
   test('Download Menu Toggles', async ({ page }) => {
@@ -96,5 +97,47 @@ test.describe('Samarkand Text Converter E2E', () => {
 
     // Check if title is visible (maybe smaller text, but present)
     await expect(page.getByRole('heading', { name: /MATN KONVERTORI/i })).toBeVisible();
+  });
+
+  test('Mobile View Interaction', async ({ page }) => {
+      // Emulate iPhone 12
+      await page.setViewportSize({ width: 390, height: 844 });
+
+      const inputArea = page.getByPlaceholder('// Matnni shu yerga kiriting...');
+      const clearBtn = page.getByRole('button', { name: /Kirishni Tozalash/i });
+
+      await clearBtn.click();
+      await inputArea.click();
+      await inputArea.fill('Test Mobile');
+
+      const outputArea = page.getByPlaceholder('// Natija shu yerda paydo bo\'ladi...');
+      // Wait for auto-conversion. "Test Mobile" (Latin) -> "Тест Мобиле" (Cyrillic) due to auto-detection.
+      await expect(outputArea).toHaveValue(/Тест Мобиле/);
+
+      // Check if buttons are tappable and not covered
+      const copyBtn = page.getByRole('button', { name: "Nusxalash" });
+      await expect(copyBtn).toBeVisible();
+      await expect(copyBtn).toBeEnabled();
+
+      // Try download menu in mobile
+      const downloadBtn = page.getByRole('button', { name: /Fayl Sifatida Yuklash/i });
+      await downloadBtn.click();
+
+      await expect(page.getByRole('button', { name: /TXT \(\.txt\)/i })).toBeVisible();
+      // Ensure it can be closed by tapping elsewhere (header)
+      await page.locator('header').click({ force: true });
+      await expect(page.getByRole('button', { name: /TXT \(\.txt\)/i })).not.toBeVisible();
+  });
+
+  test('Reverse Transliteration (Latin to Cyrillic) Flow', async ({ page }) => {
+      const clearBtn = page.getByRole('button', { name: /Kirishni Tozalash/i });
+      await clearBtn.click();
+
+      const inputArea = page.getByPlaceholder('// Matnni shu yerga kiriting...');
+      await inputArea.fill('Salom Dunyo'); // Latin Input
+
+      const outputArea = page.getByPlaceholder('// Natija shu yerda paydo bo\'ladi...');
+      // Expect Cyrillic output
+      await expect(outputArea).toHaveValue('Салом Дунё');
   });
 });

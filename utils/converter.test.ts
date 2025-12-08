@@ -106,6 +106,59 @@ describe('Transliteration Logic (Cyrillic to Latin)', () => {
       const expected = "Salom 123! Hello World @#$";
       expect(convertText(input, ConversionMode.CYRILLIC_TO_LATIN)).toBe(expected);
     });
+
+    it('handles special characters and emojis', () => {
+        const input = "Салом! 🇺🇿 😊";
+        const expected = "Salom! 🇺🇿 😊";
+        expect(convertText(input, ConversionMode.CYRILLIC_TO_LATIN)).toBe(expected);
+    });
+
+    it('handles null/empty input gracefully', () => {
+        expect(convertText('', ConversionMode.CYRILLIC_TO_LATIN)).toBe('');
+        // @ts-ignore
+        expect(convertText(null, ConversionMode.CYRILLIC_TO_LATIN)).toBe('');
+    });
+  });
+
+  describe('Transliteration Logic (Latin to Cyrillic)', () => {
+    it('handles basic 1:1 mapping', () => {
+      expect(convertText('abvgd', ConversionMode.LATIN_TO_CYRILLIC)).toBe('абвгд');
+      expect(convertText('salom', ConversionMode.LATIN_TO_CYRILLIC)).toBe('салом');
+    });
+
+    it('handles digraphs (sh, ch, ts, yo, yu, ya)', () => {
+      expect(convertText('shahar', ConversionMode.LATIN_TO_CYRILLIC)).toBe('шаҳар');
+      expect(convertText('choy', ConversionMode.LATIN_TO_CYRILLIC)).toBe('чой');
+      expect(convertText('tsirk', ConversionMode.LATIN_TO_CYRILLIC)).toBe('цирк');
+      expect(convertText('yosh', ConversionMode.LATIN_TO_CYRILLIC)).toBe('ёш');
+      expect(convertText('yulduz', ConversionMode.LATIN_TO_CYRILLIC)).toBe('юлдуз');
+      expect(convertText('yangi', ConversionMode.LATIN_TO_CYRILLIC)).toBe('янги');
+      // 'ye' is mapped to 'е'
+      expect(convertText('yer', ConversionMode.LATIN_TO_CYRILLIC)).toBe('ер');
+    });
+
+    it('handles apostrophes (o\' -> ў, g\' -> ғ)', () => {
+      expect(convertText("o'zbekiston", ConversionMode.LATIN_TO_CYRILLIC)).toBe('ўзбекистон');
+      expect(convertText("g'alaba", ConversionMode.LATIN_TO_CYRILLIC)).toBe('ғалаба');
+    });
+
+    describe('Smart Casing (Latin to Cyrillic)', () => {
+      it('handles Title Case for digraphs', () => {
+        expect(convertText('Shahar', ConversionMode.LATIN_TO_CYRILLIC)).toBe('Шаҳар');
+        expect(convertText('Choy', ConversionMode.LATIN_TO_CYRILLIC)).toBe('Чой');
+        expect(convertText('Yosh', ConversionMode.LATIN_TO_CYRILLIC)).toBe('Ёш');
+      });
+
+      it('handles UPPERCASE for digraphs', () => {
+        expect(convertText('SHAHAR', ConversionMode.LATIN_TO_CYRILLIC)).toBe('ШАҲАР');
+        expect(convertText('CHOY', ConversionMode.LATIN_TO_CYRILLIC)).toBe('ЧОЙ');
+        expect(convertText('YOSH', ConversionMode.LATIN_TO_CYRILLIC)).toBe('ЁШ');
+      });
+
+      it('handles mixed case', () => {
+        expect(convertText('Salom DUNYO', ConversionMode.LATIN_TO_CYRILLIC)).toBe('Салом ДУНЁ');
+      });
+    });
   });
 
   describe('Other Conversion Modes', () => {
