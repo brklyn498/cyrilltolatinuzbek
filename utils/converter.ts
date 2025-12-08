@@ -220,21 +220,35 @@ const transliterateLatinToCyrillic = (text: string): string => {
             const lowerTwoChars = twoChars.toLowerCase();
 
             if (LATIN_DIGRAPHS[lowerTwoChars]) {
-                digraphFound = true;
-                const base = LATIN_DIGRAPHS[lowerTwoChars];
+                // Smart Casing Logic:
+                // Digraph should be used if casing is consistent or standard Title Case.
+                // Case 1: sh (lower, lower) -> Match
+                // Case 2: SH (Upper, Upper) -> Match
+                // Case 3: Sh (Upper, lower) -> Match (Title)
+                // Case 4: sH (lower, Upper) -> NO MATCH (Treat as separate letters)
 
-                // Smart casing
                 const firstChar = twoChars[0];
                 const secondChar = twoChars[1];
+                const isFirstUpper = isUpperCaseLetter(firstChar);
+                const isSecondUpper = isUpperCaseLetter(secondChar);
 
-                if (isUpperCaseLetter(firstChar)) {
-                    result += base.toUpperCase();
+                // If 'sH' (lower, Upper), skip digraph logic and treat as separate.
+                if (!isFirstUpper && isSecondUpper) {
+                    digraphFound = false;
+                    // Fallthrough to single char processing
                 } else {
-                    result += base;
-                }
+                    digraphFound = true;
+                    const base = LATIN_DIGRAPHS[lowerTwoChars];
 
-                i++; // Skip next char
-                continue;
+                    if (isFirstUpper) {
+                        result += base.toUpperCase();
+                    } else {
+                        result += base;
+                    }
+
+                    i++; // Skip next char
+                    continue;
+                }
             }
         }
 

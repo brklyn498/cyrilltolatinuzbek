@@ -9,8 +9,8 @@
 
 ### 1.1 Latin-to-Cyrillic Logic (Currently Missing)
 The current test suite heavily favors Cyrillic-to-Latin. We need to verify the reverse direction.
-- [ ] **Basic Mapping:** Verify simple 1:1 characters (e.g., `a` -> `а`, `b` -> `б`).
-- [ ] **Digraphs:** Verify correct conversion of multi-character sequences:
+- [x] **Basic Mapping:** Verify simple 1:1 characters (e.g., `a` -> `а`, `b` -> `б`).
+- [x] **Digraphs:** Verify correct conversion of multi-character sequences:
     - `sh` -> `ш`
     - `ch` -> `ч`
     - `ts` -> `ц`
@@ -18,16 +18,16 @@ The current test suite heavily favors Cyrillic-to-Latin. We need to verify the r
     - `yu` -> `ю`
     - `ya` -> `я`
     - `ye` -> `е`
-- [ ] **Apostrophes:** Verify `o'` -> `ў` and `g'` -> `ғ`.
-- [ ] **Smart Casing:**
+- [x] **Apostrophes:** Verify `o'` -> `ў` and `g'` -> `ғ`.
+- [x] **Smart Casing:**
     - `Sh` -> `Ш` (Title case)
     - `SH` -> `Ш` (All caps logic for single cyrillic char representation) - *Note: Determine if `SH` should be `Ш` or `Ш` depending on context. The converter logic usually maps `SH` to `Ш`.*
     - `sH` -> Edge case handling.
 
 ### 1.2 Edge Cases & Mixed Input
-- [ ] **Mixed Scripts:** Text containing both Cyrillic and Latin (e.g., "Salom Дунё"). Ensure the converter handles the target direction correctly without mangling the other script if possible, or handles it predictably.
-- [ ] **Non-Alphabetic Characters:** Numbers, punctuation, emojis. They should remain unchanged.
-- [ ] **Empty/Null Input:** Ensure no crashes.
+- [x] **Mixed Scripts:** Text containing both Cyrillic and Latin (e.g., "Salom Дунё"). Ensure the converter handles the target direction correctly without mangling the other script if possible, or handles it predictably.
+- [x] **Non-Alphabetic Characters:** Numbers, punctuation, emojis. They should remain unchanged.
+- [x] **Empty/Null Input:** Ensure no crashes.
 
 ---
 

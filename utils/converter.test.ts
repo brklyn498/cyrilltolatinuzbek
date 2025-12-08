@@ -18,15 +18,7 @@ describe('Transliteration Logic (Cyrillic to Latin)', () => {
     });
 
     it('converts to "ye" after a vowel', () => {
-        // Vowels: а, е, ё, и, о, у, э, ю, я, ў
-        // 'Moy' -> 'o' is vowel? No, 'y' is consonant. 'o' is vowel.
-        // 'oila' -> 'o' is vowel. 'i' follows 'o'.
-        // 'aeroport' -> 'a' is vowel. 'e' follows 'a'.
-        expect(convertText('Аэропорт', ConversionMode.CYRILLIC_TO_LATIN)).toBe('Aeroport'); // A-e... wait.
-        // In Uzbek Cyrillic: Аэропорт. 'А' is vowel. 'э' is 'e'. 'e' after vowel is usually just 'e' unless it is 'е' (ye).
-        // The rule is strictly for the letter 'е' (cyrillic ie).
-        // Cyrillic 'э' maps to 'e'. Cyrillic 'е' maps to 'ye' or 'e'.
-
+        expect(convertText('Аэропорт', ConversionMode.CYRILLIC_TO_LATIN)).toBe('Aeroport');
         expect(convertText('Оилае', ConversionMode.CYRILLIC_TO_LATIN)).toBe('Oilaye');
         expect(convertText('Сояе', ConversionMode.CYRILLIC_TO_LATIN)).toBe('Soyaye');
     });
@@ -37,15 +29,7 @@ describe('Transliteration Logic (Cyrillic to Latin)', () => {
     });
 
     it('converts to "ye" after special signs (ъ, ь)', () => {
-        // Assuming strictness where signs are preserved or affect iotation
-        // Current logic: if prev is ъ/ь, become ye.
-        // Example: 'Съезд' -> Syezd
         expect(convertText('Съезд', ConversionMode.CYRILLIC_TO_LATIN)).toBe("S'yezd");
-        // Note: ъ maps to ' (apostrophe).
-        // Code check: base = isStartOfWordOrAfterVowel ? 'ye' : 'e'.
-        // if prev is ъ, isStart... = true. So 'ye'.
-        // And 'ъ' itself maps to "'".
-        // So 'Съезд' -> 'S'yezd'. Correct.
     });
   });
 
@@ -89,8 +73,6 @@ describe('Transliteration Logic (Cyrillic to Latin)', () => {
 
     it('handles hard and soft signs', () => {
       expect(convertText('Маъно', ConversionMode.CYRILLIC_TO_LATIN)).toBe("Ma'no");
-      // Soft sign usually removed or treated as apostrophe depending on standard.
-      // Current map: 'ь': '' (empty string).
       expect(convertText('Июль', ConversionMode.CYRILLIC_TO_LATIN)).toBe('Iyul');
     });
 
@@ -119,11 +101,13 @@ describe('Transliteration Logic (Cyrillic to Latin)', () => {
         expect(convertText(null, ConversionMode.CYRILLIC_TO_LATIN)).toBe('');
     });
   });
+});
 
-  describe('Transliteration Logic (Latin to Cyrillic)', () => {
+describe('Transliteration Logic (Latin to Cyrillic)', () => {
     it('handles basic 1:1 mapping', () => {
       expect(convertText('abvgd', ConversionMode.LATIN_TO_CYRILLIC)).toBe('абвгд');
       expect(convertText('salom', ConversionMode.LATIN_TO_CYRILLIC)).toBe('салом');
+      expect(convertText('kitob', ConversionMode.LATIN_TO_CYRILLIC)).toBe('китоб');
     });
 
     it('handles digraphs (sh, ch, ts, yo, yu, ya)', () => {
@@ -158,10 +142,36 @@ describe('Transliteration Logic (Cyrillic to Latin)', () => {
       it('handles mixed case', () => {
         expect(convertText('Salom DUNYO', ConversionMode.LATIN_TO_CYRILLIC)).toBe('Салом ДУНЁ');
       });
-    });
-  });
 
-  describe('Other Conversion Modes', () => {
+      it('handles edge case for mixed case digraphs (e.g., sH)', () => {
+          // 'sH' (lower s, Upper H) should NOT be treated as digraph 'sh' (ш).
+          // It should be treated as separate letters 's' and 'H'.
+          // s -> с
+          // H -> Ҳ (mapped to 'h' -> 'ҳ', and upper -> 'Ҳ')
+          expect(convertText('sH', ConversionMode.LATIN_TO_CYRILLIC)).toBe('сҲ');
+      });
+    });
+
+    describe('Edge Cases & Mixed Input (Latin to Cyrillic)', () => {
+        it('handles mixed scripts', () => {
+            // "Salom Дунё" -> "Салом Дунё"
+            // The Cyrillic part should remain Cyrillic (mapped to itself or ignored by map).
+            expect(convertText('Salom Дунё', ConversionMode.LATIN_TO_CYRILLIC)).toBe('Салом Дунё');
+        });
+
+        it('handles non-alphabetic characters', () => {
+            expect(convertText('123! @#$', ConversionMode.LATIN_TO_CYRILLIC)).toBe('123! @#$');
+        });
+
+        it('handles empty/null input', () => {
+             expect(convertText('', ConversionMode.LATIN_TO_CYRILLIC)).toBe('');
+             // @ts-ignore
+             expect(convertText(null, ConversionMode.LATIN_TO_CYRILLIC)).toBe('');
+        });
+    });
+});
+
+describe('Other Conversion Modes', () => {
     const text = 'Salom Dunyo';
     it('UPPERCASE', () => {
         expect(convertText(text, ConversionMode.UPPERCASE)).toBe('SALOM DUNYO');
@@ -172,5 +182,4 @@ describe('Transliteration Logic (Cyrillic to Latin)', () => {
     it('REVERSE', () => {
         expect(convertText('abc', ConversionMode.REVERSE)).toBe('cba');
     });
-  });
 });
