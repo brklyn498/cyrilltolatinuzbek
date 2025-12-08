@@ -606,7 +606,7 @@ const App: React.FC = () => {
                 <button
                   onClick={handleCopy}
                   className={`p-2 text-[#1a1a2e] border-2 border-[#5C4033] shadow-neo-sm transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none ${isCopied ? 'bg-[#2A9D8F] text-white' : 'bg-[#e9c46a] hover:bg-[#f4a261]'}`}
-                  title="Nusxalash"
+                  title={isCopied ? "Nusxalandi!" : "Nusxalash"}
                 >
                   {isCopied ? (
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
